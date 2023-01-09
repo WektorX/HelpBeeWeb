@@ -1,6 +1,8 @@
 .App {
     display: flex;
     flex-direction: column;
+    justify-content: center;
+    align-items: center;
 }
 
 .header{
@@ -29,4 +31,16 @@
     flex-direction: row;
     justify-content: center;
     margin: 20px;
+}
+
+.table {
+    display: flex;
+    flex-direction: row;
+    width: 80%;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+.spinner{
+    margin-top: 80px;
 }
