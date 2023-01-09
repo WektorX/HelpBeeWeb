@@ -1,0 +1,2 @@
+export const LANGUAGE_CHANGE = 'LANGUAGE_CHANGE'
+export const USER_AUTH = 'USER_AUTH'

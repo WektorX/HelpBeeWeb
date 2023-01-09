@@ -1,0 +1,32 @@
+.App {
+    display: flex;
+    flex-direction: column;
+}
+
+.header{
+    width: 100%;
+    height: 50px;
+    padding: 20px;
+    background-color: #ffcb05;
+    text-align: end;
+    align-items: flex-end;
+    justify-content: center;
+}
+
+.header button {
+    border: 0;
+    background-color: rgba(0,0,0,0);
+    color: '#'
+}
+
+.header button:hover{
+    cursor: pointer;
+    color: '#AF9004';
+}
+
+.tabBar {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    margin: 20px;
+}
