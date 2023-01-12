@@ -1,12 +1,12 @@
 const firebaseConfig = {
-    apiKey: "AIzaSyC84uB2Fn3_iKJuj6U8LExJuE7m1TwUkAM",
-    authDomain: "helpbee-bb95a.firebaseapp.com",
-    projectId: "helpbee-bb95a",
-    storageBucket: "helpbee-bb95a.appspot.com",
-    messagingSenderId: "639765085439",
-    appId: "1:639765085439:web:985b5cd13b59f21c86e0ca",
-    measurementId: "G-Z4B5TVFJRG"
-  };
+  apiKey: "AIzaSyCZq9V6wQGrUDBXYWuXT_k0-AbfQy6hPIk",
+  authDomain: "helpbee-2cc25.firebaseapp.com",
+  projectId: "helpbee-2cc25",
+  storageBucket: "helpbee-2cc25.appspot.com",
+  messagingSenderId: "298012877182",
+  appId: "1:298012877182:web:d617b5c7d47f044176932f",
+  measurementId: "G-ND4LWVZN2Z"
+};
 
 
 export { firebaseConfig }

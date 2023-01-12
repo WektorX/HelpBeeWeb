@@ -101,10 +101,6 @@ export default function EnhancedTable(props) {
     const [page, setPage] = React.useState(0);
     const [rowsPerPage, setRowsPerPage] = React.useState(5);
 
-    React.useEffect(()=>{
-        console.log(props)
-    },[])
-
     const handleRequestSort = (event, property) => {
         const isAsc = orderBy === property && order === 'asc';
         setOrder(isAsc ? 'desc' : 'asc');
@@ -164,6 +160,7 @@ export default function EnhancedTable(props) {
                                             onClick={(event) => handleClick(event, row.id)}
                                             tabIndex={-1}
                                             key={row.id}
+                                            className={'row'}
                                             style={{backgroundColor: 'rgba(0,0,0,0.1)', color:'white', borderBottom: '2px solid #292929' }}
                                         >
                                             {cells}

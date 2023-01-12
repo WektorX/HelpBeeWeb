@@ -7,7 +7,14 @@ import '../styles/home.css'
 import SegmentedControl from "../components/SegmentedControl";
 import Table from "../components/Table";
 import { getReportedOffers, getBlockedOffers, getAllOffers, getAllUsers } from '../api/get';
+import Button from '@mui/material/Button';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
 import { Grid } from 'react-loader-spinner'
+import { setBlockOffer, setReviewedOffer, setPermissions } from '../api/post';
 const Home = () => {
 
   const dispatch = useDispatch();
@@ -18,16 +25,21 @@ const Home = () => {
   const type = useSelector((store) => store.user.userType)
 
   const [selectedValue, setSelectedValue] = useState("reported");
-  
+
   const [reported, setReported] = useState([]);
   const [blocked, setBlocked] = useState([]);
   const [offers, setOffers] = useState([]);
   const [users, setUsers] = useState([]);
 
   const [rows, setRows] = useState([]);
-  const [headCells, setHeadCells] = useState([])
+  const [headCells, setHeadCells] = useState([]);
 
-  const [status, setStatus] = useState("loading")
+  const [status, setStatus] = useState("loading");
+
+  const [selected, setSelected] = useState(null);
+  const [showEdit, setShowEdit] = useState(false);
+
+  const [usersType, setUsersType] = useState("");
 
   const moderatorSegements = [
     {
@@ -58,6 +70,11 @@ const Home = () => {
       ref: useRef()
     },
     {
+      label: "Blocked offers",
+      value: "blocked",
+      ref: useRef()
+    },
+    {
       label: "Users",
       value: "users",
       ref: useRef()
@@ -68,7 +85,7 @@ const Home = () => {
       let temp = JSON.parse(sessionStorage.getItem("auth"));
       dispatch(userAuth(temp));
       dispatch(userUID(temp.uid))
-      dispatch(userType(temp.type))
+      dispatch(userType(sessionStorage.getItem("userType")))
       retriveReported();
     }
     else {
@@ -96,7 +113,7 @@ const Home = () => {
           title: item.title,
           user: item.firstName + " " + item.lastName,
           number_of_reports: item.reportedBy.length,
-          date: new Date(item.publicationDate).toISOString().slice(0, 10)
+          date: new Date(item.publicationDate).toISOString()?.slice(0, 10)
         }
       })
       createHeadCells(rows)
@@ -105,6 +122,7 @@ const Home = () => {
     else {
       setRows([])
       setHeadCells([])
+      setStatus("loaded")
     }
   }
 
@@ -129,6 +147,7 @@ const Home = () => {
     else {
       setRows([])
       setHeadCells([])
+      setStatus("loaded")
     }
   }
 
@@ -146,7 +165,8 @@ const Home = () => {
           user: item.firstName + " " + item.lastName,
           number_of_reports: item.reportedBy.length,
           date: new Date(item.publicationDate).toISOString().slice(0, 10),
-          blocked : item.blocked? 'Yes' : 'No'
+          blocked: item.blocked ? 'Yes' : 'No',
+          reviewed: item.reviewed? 'Yes' : 'No'
         }
       })
       createHeadCells(rows)
@@ -155,6 +175,7 @@ const Home = () => {
     else {
       setRows([])
       setHeadCells([])
+      setStatus("loaded")
     }
   }
 
@@ -178,6 +199,7 @@ const Home = () => {
     else {
       setRows([])
       setHeadCells([])
+      setStatus("loaded")
     }
   }
 
@@ -193,9 +215,9 @@ const Home = () => {
       headCells.push(cell);
     }
     setHeadCells(headCells)
-    setTimeout(()=>{
+    setTimeout(() => {
       setStatus("loaded")
-    },500)
+    }, 500)
   }
 
   const keyToLabel = (key) => {
@@ -219,11 +241,59 @@ const Home = () => {
 
 
   const handleOfferClick = (id) => {
-    console.log(id);
+    let temp = [];
+    switch (selectedValue) {
+      case 'reported':
+        temp = reported;
+        break;
+      case 'blocked':
+        temp = blocked;
+        break;
+      case 'offers':
+        temp = offers;
+        break;
+      case 'users':
+        temp = users
+        break;
+    }
+    let index = temp.findIndex(item => item.id === id);
+    if(selectedValue === 'users'){
+      setUsersType(temp[index].userType)
+    }
+    setSelected(temp[index]);
+    setShowEdit(true);
   }
+
 
   const handleSelectedChange = (selected) => {
     setStatus('loading')
+    refresh(selected);
+    setSelectedValue(selected)
+  }
+
+  const handleClose = () => {
+    setShowEdit(false);
+  };
+
+  const handleBlock = async() => {
+    const response = await setBlockOffer(selected.id, !selected.blocked)
+    refresh(selectedValue)
+    setShowEdit(false);
+  };
+
+  const handleReviewed = async() => {
+    const response = await setReviewedOffer(selected.id);
+    refresh(selectedValue)
+    setShowEdit(false);
+  };
+
+  const handleSave = async() =>{
+    const response  = await setPermissions(selected.id, usersType);
+    refresh(selectedValue);
+    setShowEdit(false);
+  }
+
+  const refresh = (selected) => {
     switch (selected) {
       case 'reported':
         retriveReported();
@@ -236,12 +306,8 @@ const Home = () => {
         break;
       case 'users':
         retriveUsers();
-      break;
-      default:
-        console.log("Xd");
+        break;
     }
-
-    setSelectedValue(selected)
   }
 
   return (
@@ -276,7 +342,65 @@ const Home = () => {
           <Table rows={rows} headCells={headCells} handleClick={handleOfferClick} />
         </div>}
 
+    {selectedValue !== 'users'?
+      <Dialog
+        open={showEdit && selected !== null && selectedValue !== "users"}
+        onClose={handleClose}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">
+          {"Offer details"}
+        </DialogTitle>
+        <DialogContent>
+          <p><b className='dialog-label'>Title:</b> {selected?.title}</p>
+          <br/>
+          <p><b className='dialog-label'>Description:</b>  {selected?.description}</p>
+          <br/>
+          <p><b className='dialog-label'>Created by:</b>  {selected?.firstName + " "+ selected?.lastName}</p>
+          <br/>
+          <p><b className='dialog-label'>Created:</b>  {selected?.publicationDate?.slice(0,10)}</p>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleBlock}>{selected?.blocked? 'Unblock' : 'Block'}</Button>
+          {selected?.reviewed? null : <Button onClick={handleReviewed} autoFocus>Accept</Button>}
+          <Button onClick={handleClose}>Close</Button>
 
+        </DialogActions>
+      </Dialog>
+      :
+      <Dialog
+        open={showEdit && selected !== null && selectedValue === "users"}
+        onClose={handleClose}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">
+          {"User details"}
+        </DialogTitle>
+        <DialogContent>
+          <p><b className='dialog-label'>First name:</b> {selected?.firstName}</p>
+          <br/>
+          <p><b className='dialog-label'>Last name:</b>  {selected?.lastName}</p>
+          <br/>
+          <p><b className='dialog-label'>Email address:</b>  {selected?.email}</p>
+          <br/>
+          <div><b className='dialog-label'>Type:</b>  
+              <select disabled={selected?.id === uid} defaultValue={selected?.userType} onChange={(e) => setUsersType(e.target.value)} className="user-type">
+                <option value={'normal'}>Normal</option>
+                <option value={'moderator'}>Moderator</option>
+                <option value={'superadmin'}>Superadmin</option>
+              </select>
+          </div>
+        </DialogContent>
+        <DialogActions>
+          {usersType && usersType !== "" && usersType !== selected?.userType && selected?.id !== uid ? <Button onClick={handleSave}>Save</Button> :  null}
+          
+          <Button onClick={handleClose}>Close</Button>
+
+        </DialogActions>
+      </Dialog>
+}
     </div>
   );
 }
