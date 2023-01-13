@@ -37,12 +37,13 @@ export const setReviewedOffer = async(id) => {
     }
 }
 
-export const setPermissions = async(id, type) => {
+export const setPermissions = async(id, type, blocked) => {
     try {
         const res = await axios.post(`${baseURL}/api/users/setPermissions`,
             {
                 uid: id,
-                userType: type
+                userType: type,
+                blocked: blocked
             },
             {
                 'Content-Type': 'application/json;charset=utf-8'

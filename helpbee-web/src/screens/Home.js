@@ -40,6 +40,8 @@ const Home = () => {
   const [showEdit, setShowEdit] = useState(false);
 
   const [usersType, setUsersType] = useState("");
+  const [userBlocked, setUserBlocked] = useState(false);
+
 
   const moderatorSegements = [
     {
@@ -166,7 +168,7 @@ const Home = () => {
           number_of_reports: item.reportedBy.length,
           date: new Date(item.publicationDate).toISOString().slice(0, 10),
           blocked: item.blocked ? 'Yes' : 'No',
-          reviewed: item.reviewed? 'Yes' : 'No'
+          reviewed: item.reviewed ? 'Yes' : 'No'
         }
       })
       createHeadCells(rows)
@@ -191,6 +193,7 @@ const Home = () => {
           lastName: item.lastName,
           email: item.email,
           type: item.userType,
+          blocked: item.blocked ? 'Blocked' : 'Active',
         }
       })
       createHeadCells(rows)
@@ -257,8 +260,9 @@ const Home = () => {
         break;
     }
     let index = temp.findIndex(item => item.id === id);
-    if(selectedValue === 'users'){
+    if (selectedValue === 'users') {
       setUsersType(temp[index].userType)
+      setUserBlocked(temp[index].blocked)
     }
     setSelected(temp[index]);
     setShowEdit(true);
@@ -275,20 +279,20 @@ const Home = () => {
     setShowEdit(false);
   };
 
-  const handleBlock = async() => {
+  const handleBlock = async () => {
     const response = await setBlockOffer(selected.id, !selected.blocked)
     refresh(selectedValue)
     setShowEdit(false);
   };
 
-  const handleReviewed = async() => {
+  const handleReviewed = async () => {
     const response = await setReviewedOffer(selected.id);
     refresh(selectedValue)
     setShowEdit(false);
   };
 
-  const handleSave = async() =>{
-    const response  = await setPermissions(selected.id, usersType);
+  const handleSave = async () => {
+    const response = await setPermissions(selected.id, usersType, userBlocked);
     refresh(selectedValue);
     setShowEdit(false);
   }
@@ -342,65 +346,68 @@ const Home = () => {
           <Table rows={rows} headCells={headCells} handleClick={handleOfferClick} />
         </div>}
 
-    {selectedValue !== 'users'?
-      <Dialog
-        open={showEdit && selected !== null && selectedValue !== "users"}
-        onClose={handleClose}
-        aria-labelledby="alert-dialog-title"
-        aria-describedby="alert-dialog-description"
-      >
-        <DialogTitle id="alert-dialog-title">
-          {"Offer details"}
-        </DialogTitle>
-        <DialogContent>
-          <p><b className='dialog-label'>Title:</b> {selected?.title}</p>
-          <br/>
-          <p><b className='dialog-label'>Description:</b>  {selected?.description}</p>
-          <br/>
-          <p><b className='dialog-label'>Created by:</b>  {selected?.firstName + " "+ selected?.lastName}</p>
-          <br/>
-          <p><b className='dialog-label'>Created:</b>  {selected?.publicationDate?.slice(0,10)}</p>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleBlock}>{selected?.blocked? 'Unblock' : 'Block'}</Button>
-          {selected?.reviewed? null : <Button onClick={handleReviewed} autoFocus>Accept</Button>}
-          <Button onClick={handleClose}>Close</Button>
+      {selectedValue !== 'users' ?
+        <Dialog
+          open={showEdit && selected !== null && selectedValue !== "users"}
+          onClose={handleClose}
+          aria-labelledby="alert-dialog-title"
+          aria-describedby="alert-dialog-description"
+        >
+          <DialogTitle id="alert-dialog-title">
+            {"Offer details"}
+          </DialogTitle>
+          <DialogContent>
+            <p><b className='dialog-label'>Title:</b> {selected?.title}</p>
+            <br />
+            <p><b className='dialog-label'>Description:</b>  {selected?.description}</p>
+            <br />
+            <p><b className='dialog-label'>Created by:</b>  {selected?.firstName + " " + selected?.lastName}</p>
+            <br />
+            <p><b className='dialog-label'>Created:</b>  {selected?.publicationDate?.slice(0, 10)}</p>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleBlock}>{selected?.blocked ? 'Unblock' : 'Block'}</Button>
+            {selected?.reviewed ? null : <Button onClick={handleReviewed} autoFocus>Accept</Button>}
+            <Button onClick={handleClose}>Close</Button>
 
-        </DialogActions>
-      </Dialog>
-      :
-      <Dialog
-        open={showEdit && selected !== null && selectedValue === "users"}
-        onClose={handleClose}
-        aria-labelledby="alert-dialog-title"
-        aria-describedby="alert-dialog-description"
-      >
-        <DialogTitle id="alert-dialog-title">
-          {"User details"}
-        </DialogTitle>
-        <DialogContent>
-          <p><b className='dialog-label'>First name:</b> {selected?.firstName}</p>
-          <br/>
-          <p><b className='dialog-label'>Last name:</b>  {selected?.lastName}</p>
-          <br/>
-          <p><b className='dialog-label'>Email address:</b>  {selected?.email}</p>
-          <br/>
-          <div><b className='dialog-label'>Type:</b>  
+          </DialogActions>
+        </Dialog>
+        :
+        <Dialog
+          open={showEdit && selected !== null && selectedValue === "users"}
+          onClose={handleClose}
+          aria-labelledby="alert-dialog-title"
+          aria-describedby="alert-dialog-description"
+        >
+          <DialogTitle id="alert-dialog-title">
+            {"User details"}
+          </DialogTitle>
+          <DialogContent>
+            <p><b className='dialog-label'>First name:</b> {selected?.firstName}</p>
+            <br />
+            <p><b className='dialog-label'>Last name:</b>  {selected?.lastName}</p>
+            <br />
+            <p><b className='dialog-label'>Email address:</b>  {selected?.email}</p>
+            <br />
+            <div><b className='dialog-label'>Type:</b>
               <select disabled={selected?.id === uid} defaultValue={selected?.userType} onChange={(e) => setUsersType(e.target.value)} className="user-type">
                 <option value={'normal'}>Normal</option>
                 <option value={'moderator'}>Moderator</option>
                 <option value={'superadmin'}>Superadmin</option>
               </select>
-          </div>
-        </DialogContent>
-        <DialogActions>
-          {usersType && usersType !== "" && usersType !== selected?.userType && selected?.id !== uid ? <Button onClick={handleSave}>Save</Button> :  null}
-          
-          <Button onClick={handleClose}>Close</Button>
+            </div>
+            <div><b className='dialog-label'>Blocked:</b>
+              <input type={'checkbox'} checked={userBlocked} onChange={(e) => setUserBlocked(e.target.checked)}/>
+            </div>
+          </DialogContent>
+          <DialogActions>
+            {usersType && usersType !== "" && (usersType !== selected?.userType || userBlocked != selected?.blocked) && selected?.id !== uid ? <Button onClick={handleSave}>Save</Button> : null}
 
-        </DialogActions>
-      </Dialog>
-}
+            <Button onClick={handleClose}>Close</Button>
+
+          </DialogActions>
+        </Dialog>
+      }
     </div>
   );
 }
