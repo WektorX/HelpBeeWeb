@@ -2,12 +2,15 @@ import axios from 'axios';
 const baseURL = 'http://localhost:3000';
 
 
-export const setBlockOffer = async(id, blocked) => {
+export const setBlockOffer = async(id, blocked, userID, worker, title) => {
     try {
         const res = await axios.post(`${baseURL}/api/offers/setBlockOffer`,
             {
                 id: id,
-                blocked: blocked
+                blocked: blocked,
+                userID : userID,
+                worker: worker,
+                title: title
             },
             {
                 'Content-Type': 'application/json;charset=utf-8'

@@ -280,7 +280,9 @@ const Home = () => {
   };
 
   const handleBlock = async () => {
-    const response = await setBlockOffer(selected.id, !selected.blocked)
+    console.log(selected)
+
+    const response = await setBlockOffer(selected.id, !selected.blocked, selected.userID, selected.worker, selected.title)
     refresh(selectedValue)
     setShowEdit(false);
   };
